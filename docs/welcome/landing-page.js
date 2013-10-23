@@ -31,7 +31,7 @@
         }, {
           number: 25114,
           description: 'flat tires',
-          detail: 'occur in american each hour',
+          detail: 'occur in america each hour',
           source: 'http://excelmathmike.blogspot.com/2011/04/phooey-on-flats-part-i.html'
         }
       ]
@@ -51,6 +51,21 @@
           description: 'minutes snoozed',
           detail: 'by the average american each year',
           source: 'http://jsfiddle.net/adamschwartz/BWgWj/show/light/'
+        }
+      ]
+    }, {
+      name: 'slot-machine',
+      numbers: [
+        {
+          number: 818,
+          description: '',
+          detail: '',
+          source: ''
+        }, {
+          number: 777,
+          description: '',
+          detail: '',
+          source: ''
         }
       ]
     }, {
@@ -77,8 +92,21 @@
 
   setupOnePageScroll = function() {
     return $(function() {
-      return $('.main').onepage_scroll({
+      $('.main').onepage_scroll({
         sectionContainer: '.section'
+      });
+      $('.down-arrow').click(function() {
+        return $('.main').moveDown();
+      });
+      return $(document).keydown(function(e) {
+        switch (e.keyCode) {
+          case 40:
+          case 34:
+            return $('.main').moveDown();
+          case 33:
+          case 38:
+            return $('.main').moveUp();
+        }
       });
     });
   };
