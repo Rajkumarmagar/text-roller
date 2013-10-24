@@ -3,6 +3,15 @@ RIBBON_HTML = '<span class="odometer-ribbon"><span class="odometer-ribbon-inner"
 DIGIT_HTML = '<span class="odometer-digit"><span class="odometer-digit-spacer">8</span><span class="odometer-digit-inner">' + RIBBON_HTML + '</span></span>'
 FORMAT_MARK_HTML = '<span class="odometer-formatting-mark"></span>'
 
+# Special values for alpha frames
+
+ALPHA_MIN = 32
+
+ALPHA_MAX = 123
+
+ALPHA_COUNT = ALPHA_MAX - ALPHA_MIN
+
+
 # The bit within the parenthesis will be repeated, so (,ddd) becomes 123,456,789....
 #
 # If your locale uses spaces to seperate digits, you could consider using a
@@ -11,7 +20,7 @@ FORMAT_MARK_HTML = '<span class="odometer-formatting-mark"></span>'
 # Numbers will be rounded to the number of digits after the radix seperator.
 #
 # This is just the default, it can also be set as options.format.
-DIGIT_FORMAT = '(,ddd).dd'
+DIGIT_FORMAT = 'd'
 
 FORMAT_PARSER = /^\(?([^)]*)\)?(?:(.)(d+))?$/
 
@@ -57,15 +66,15 @@ now = ->
   window.performance?.now?() ? +new Date
 
 round = (val, precision=0) ->
-  return Math.round(val) unless precision
+  return val #Math.round(val) unless precision
 
-  val *= Math.pow(10, precision)
-  val += 0.5
-  val = Math.floor(val)
-  val /= Math.pow(10, precision)
+  #val *= Math.pow(10, precision)
+  #val += 0.5
+  #val = Math.floor(val)
+  #val /= Math.pow(10, precision)
 
 fractionalPart = (val) ->
-  val - round(val)
+  #val - round(val)
 
 _jQueryWrapped = false
 do wrapJQuery = ->
@@ -153,16 +162,26 @@ class Odometer
   stopWatchingMutations: ->
     @observer?.disconnect()
 
+  intToChar: (val) ->
+    val = String.fromCharCode val + ALPHA_MIN
+    val
+
   cleanValue: (val) ->
     if typeof val is 'string'
-      badChars = '.,'
-      if @format.radix
-        badChars = badChars.replace @format.radix, ''
-      regex = new RegExp "[#{ badChars }\s]", 'g'
+      val = val.split ''
+      val = for char in val
+        char.charCodeAt(0) - ALPHA_MIN
+      console.log "[afterCharcode] Val = "
+      console.log val
+      val
+      #badChars = '.,'
+      #if @format.radix
+      #  badChars = badChars.replace @format.radix, ''
+      #regex = new RegExp "[#{ badChars }\s]", 'g'
 
-      val = parseFloat(val.replace(regex, ''), 10) or 0
+      #val = parseFloat(val.replace(regex, ''), 10) or 0
 
-    round(val, @format.precision)
+    #round(val, @format.precision)
 
   bindTransitionEnd: ->
     return if @transitionEndBound
@@ -200,6 +219,9 @@ class Odometer
     @format = {repeating, radix, precision}
 
   render: (value=@value) ->
+    console.log "[@render] value = "
+    console.log value
+    console.log @value
     @stopWatchingMutations()
     @resetFormat()
 
@@ -237,8 +259,10 @@ class Odometer
 
     @digits = []
     wholePart = not @format.precision or not fractionalPart(value) or false
-    for digit in value.toString().split('').reverse()
-      if digit is @format.radix
+    for digit in value.reverse()
+      console.log "[@for digit in value.rev()] digit = " + digit
+      console.log "[String.fromCharCode(digit)] digit = " + String.fromCharCode(digit)
+      if @intToChar digit is @format.radix
         wholePart = true
 
       @addDigit digit, wholePart
@@ -247,10 +271,11 @@ class Odometer
 
   update: (newValue) ->
     newValue = @cleanValue newValue
+    console.log "New value : "+newValue
+    return unless newValue != @value
+    console.log "[noreturn ! :D]"
 
-    return unless diff = newValue - @value
-
-    if diff > 0
+    if newValue > @value
       @el.className += ' odometer-animating-up'
     else
       @el.className += ' odometer-animating-down'
@@ -307,21 +332,45 @@ class Odometer
         break if char is 'd'
 
         @addSpacer char
-
+    
+    console.log "[after repeatin@addDigit] value = " + value
     digit = @renderDigit()
-    digit.querySelector('.odometer-value').innerHTML = value
+    console.log "[after renderDigit@addDigit] value = " + value
+    digit.querySelector('.odometer-value').innerHTML = @intToChar value
     @digits.push digit
 
     @insertDigit digit
 
   animate: (newValue) ->
+    console.log ">>> animate. val=" + newValue
     if not TRANSITION_SUPPORT or @options.animation is 'count'
       @animateCount newValue
     else
       @animateSlide newValue
 
+  valDiff: (newValue, oldValue) ->
+    diffTab = []
+    console.log "@valDiff"
+    finalSize = Math.max(oldValue.length, newValue.length)
+    for i in [0..finalSize-1]
+      diffTab[i] = (oldValue[i] or 0) - (newValue[i] or 0)
+      console.log "[" + (oldValue[i] or 0) + " - " +  (newValue[i] or 0) + " = " + diffTab[i]
+    diffTab
+
+  noChanges: (diff) ->
+    for i in diff
+      if i isnt false
+        return true
+    return false
+      
+
   animateCount: (newValue) ->
+    console.log ">>> animateCount. val="
+    console.log newValue
+    console.log ">>> valDiff. val="
+    console.log @valDiff(newValue, @value)
     return unless diff = +newValue - @value
+    console.log ">>> animateCount.noretrun"
 
     start = last = now()
 
@@ -349,12 +398,16 @@ class Odometer
         setTimeout tick, COUNT_MS_PER_FRAME
 
   getDigitCount: (values...) ->
+    finalSize = 0
     for value, i in values
+      if value.length > finalSize then finalSize = value.length
       values[i] = Math.abs(value)
-
+    console.log "finalSize = " + finalSize
     max = Math.max values...
+    console.log "max = " + max
 
     Math.ceil(Math.log(max + 1) / Math.log(10))
+    finalSize
 
   getFractionalDigitCount: (values...) ->
     # This assumes the value has already been rounded to
@@ -382,13 +435,19 @@ class Odometer
   animateSlide: (newValue) ->
     oldValue = @value
 
-    fractionalCount = @getFractionalDigitCount oldValue, newValue
+    console.log ">>> animateSlide. val="
+    console.log newValue
+    console.log ">>> valDiff. val="
+    console.log @valDiff(newValue, @value)
+    fractionalCount = 0 #@getFractionalDigitCount oldValue, newValue
 
     if fractionalCount
       newValue = newValue * Math.pow(10, fractionalCount)
       oldValue = oldValue * Math.pow(10, fractionalCount)
 
-    return unless diff = newValue - oldValue
+    diff = @valDiff(newValue, @value)
+    return unless @noChanges diff
+    console.log ">>> PASSED SLIDE"
 
     @bindTransitionEnd()
 
@@ -398,14 +457,18 @@ class Odometer
     boosted = 0
     # We create a array to represent the series of digits which should be
     # animated in each column
-    for i in [0...digitCount]
-      start = Math.floor(oldValue / Math.pow(10, (digitCount - i - 1)))
-      end = Math.floor(newValue / Math.pow(10, (digitCount - i - 1)))
+    for i in [(digitCount-1)..0]#[0...digitCount]
+      start = Math.floor(oldValue[i])# / Math.pow(10, (digitCount - i - 1)))
+      console.log "["+i+"]>>> start = " + start
+      end = Math.floor(newValue[(digitCount-1) - i])# / Math.pow(10, (digitCount - i - 1)))
+      console.log "["+i+"]>>> end = " + end
 
       dist = end - start
+      console.log "["+i+"]>>> dist = " + dist
 
       if Math.abs(dist) > @MAX_VALUES
         # We need to subsample
+        console.log "["+i+"]>>> SUBSAMPLE REQUIRED"
         frames = []
 
         # Subsequent digits need to be faster than previous ones
@@ -421,30 +484,46 @@ class Odometer
 
         boosted++
       else
-        frames = [start..end]
+        frames = [start..end] # successivement [6..0], [0..13], [1..3]
 
       # We only care about the last digit
       for frame, i in frames
-        frames[i] = Math.abs(frame % 10)
+        console.log "[frames][i:"+i+"][fame:"+frame+"] Math.abs(frame % 10) = " +  Math.abs(frame % 10)
+        frames[i] = Math.abs(frame % ALPHA_COUNT)
 
+      console.log "["+i+"]>>>frames : " + frames
       digits.push frames
+      console.log "["+i+"]>>>digits : " + digits
 
+    console.log "before @resetDigits : " + digits
+    console.log digits
     @resetDigits()
+    console.log "after @resetDigits : " + digits
+    console.log digits
 
     for frames, i in digits.reverse()
+      console.log "[Bdigits.rev()][i:"+i+"][fame:"+frame+"] @digits[i] = "
+      console.log @digits
       if not @digits[i]
-        @addDigit ' ', (i >= fractionalCount)
+        @addDigit ' ', false
+      console.log "[Adigits.rev()][i:"+i+"][fame:"+frame+"] @digits[i] = "
+      console.log @digits
+        #@addDigit ' ', (i >= fractionalCount)
 
       @ribbons[i] ?= @digits[i].querySelector('.odometer-ribbon-inner')
       @ribbons[i].innerHTML = ''
-
-      if diff < 0
+      nullArray = []
+      for tr in [0..digitCount-1]
+        nullArray[tr] = 0
+      if diff > nullArray
         frames = frames.reverse()
 
       for frame, j in frames
+        console.log "   [#]["+i+"]["+j+"][frame:"+frame+"][frames ="
+        console.log frames
         numEl = document.createElement('div')
         numEl.className = 'odometer-value'
-        numEl.innerHTML = frame
+        numEl.innerHTML = @intToChar frame
 
         @ribbons[i].appendChild numEl
 
@@ -452,6 +531,7 @@ class Odometer
           numEl.className += ' odometer-last-value'
         if j == 0
           numEl.className += ' odometer-first-value'
+        console.log "   [#]"
 
     mark = @inside.querySelector('.odometer-radix-mark')
     mark.parent.removeChild(mark) if mark?
