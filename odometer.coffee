@@ -96,14 +96,14 @@ do wrapJQuery = ->
 # In case jQuery is brought in after this file
 setTimeout wrapJQuery, 0
 
-class Odometer
+class TextRoller
   constructor: (@options) ->
     @el = @options.el
     return @el.odometer if @el.odometer?
 
     @el.odometer = @
 
-    for k, v in Odometer.options
+    for k, v in TextRoller.options
       if not @options[k]?
         @options[k] = v
 
@@ -210,7 +210,7 @@ class Odometer
 
     parsed = FORMAT_PARSER.exec format
     if not parsed
-      throw new Error "Odometer: Unparsable digit format"
+      throw new Error "TextRoller: Unparsable digit format"
 
     [repeating, radix, fractional] = parsed[1..3]
 
@@ -539,38 +539,38 @@ class Odometer
     if fractionalCount
       @addSpacer @format.radix, @digits[fractionalCount - 1], 'odometer-radix-mark'
 
-Odometer.options = window.odometerOptions ? {}
+TextRoller.options = window.odometerOptions ? {}
 
 setTimeout ->
   # We do this in a seperate pass to allow people to set
   # window.odometerOptions after bringing the file in.
   if window.odometerOptions
     for k, v of window.odometerOptions
-      Odometer.options[k] ?= v
+      TextRoller.options[k] ?= v
 , 0
 
-Odometer.init = ->
+TextRoller.init = ->
   if not document.querySelectorAll?
     # IE 7 or 8 in Quirksmode
     return
 
-  elements = document.querySelectorAll (Odometer.options.selector or '.odometer')
+  elements = document.querySelectorAll (TextRoller.options.selector or '.odometer')
 
   for el in elements
-    el.odometer = new Odometer {el, value: el.innerText}
+    el.odometer = new TextRoller {el, value: el.innerText}
 
 if document.documentElement?.doScroll? and document.createEventObject?
   # IE < 9
   _old = document.onreadystatechange
   document.onreadystatechange = ->
-    if document.readyState is 'complete' and Odometer.options.auto isnt false
-      Odometer.init()
+    if document.readyState is 'complete' and TextRoller.options.auto isnt false
+      TextRoller.init()
 
     _old?.apply this, arguments
 else
   document.addEventListener 'DOMContentLoaded', ->
-    if Odometer.options.auto isnt false
-      Odometer.init()
+    if TextRoller.options.auto isnt false
+      TextRoller.init()
   , false
 
-window.Odometer = Odometer
+window.TextRoller = TextRoller
