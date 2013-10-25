@@ -1,4 +1,4 @@
-Odometer
+TextRoller
 ========
 
 <style>
@@ -43,15 +43,15 @@ Odometer
 <script src="odometer.js"></script>
 <script>
   $(function(){
-    var starsOdometer = new Odometer({ el: $('.odometer-github-stars .odometer')[0], theme: 'minimal', value: '0' });
-    starsOdometer.render()
+    var starsTextRoller = new TextRoller({ el: $('.odometer-github-stars .odometer')[0], theme: 'minimal', value: '0' });
+    starsTextRoller.render()
 
-    var exampleOdometerValue = 123456;
-    var exampleOdometer = new Odometer({ el: $('.odometer-example')[0], theme: 'car', value: exampleOdometerValue });
-    exampleOdometer.render()
+    var exampleTextRollerValue = 123456;
+    var exampleTextRoller = new TextRoller({ el: $('.odometer-example')[0], theme: 'car', value: exampleTextRollerValue });
+    exampleTextRoller.render()
 
     setInterval(function(){
-      exampleOdometer.update(exampleOdometerValue++);
+      exampleTextRoller.update(exampleTextRollerValue++);
     }, 3000);
 
     var i = 0;
@@ -60,7 +60,7 @@ Odometer
         cache: false,
         success: function(data){
           if (data.watchers_count)
-            starsOdometer.update(data.watchers_count);
+            starsTextRoller.update(data.watchers_count);
         },
         complete: function(xhr){
           remaining = xhr.getResponseHeader('X-RateLimit-Remaining');
@@ -82,10 +82,10 @@ Odometer
 <h3 class="odometer-github-stars"><span class="odometer-label">GitHub ★ s so far:</span><div class="odometer">0</div></h3>
 <div class="odometer-subtitle"><a href="http://github.com/HubSpot/odometer" target="_blank">Star odometer</a> on GitHub to to see it update.</div>
 
-Odometer is a Javascript and CSS library for smoothly transitioning numbers.
+TextRoller is a Javascript and CSS library for smoothly transitioning numbers.
 See the [demo page](http://github.hubspot.com/odometer/docs/welcome) for some examples.
 
-Odometer's animations are handled entirely in CSS using transforms making
+TextRoller's animations are handled entirely in CSS using transforms making
 them extremely performant, with automatic fallback on older browsers.
 
 The library and largest theme is less than 3kb when minified and compressed.
@@ -128,12 +128,12 @@ window.odometerOptions = {
 };
 ```
 
-You can manually initialize an odometer with the global `Odometer`:
+You can manually initialize an odometer with the global `TextRoller`:
 
 ```javascript
 var el = document.querySelector('.some-element');
 
-od = new Odometer({
+od = new TextRoller({
   el: el,
   value: 333555,
 
@@ -164,7 +164,7 @@ Format      |  Example
 Browser Support
 ---------------
 
-Odometer is intended to support IE8+, FF4+, Safari 6+, and Chrome.
+TextRoller is intended to support IE8+, FF4+, Safari 6+, and Chrome.
 
 Dependencies
 ------------
@@ -174,7 +174,7 @@ None!
 Contributing
 ------------
 
-Odometer is built using Grunt.  To setup the build environment you first
+TextRoller is built using Grunt.  To setup the build environment you first
 must have Node.js installed.  Then:
 
 ```bash

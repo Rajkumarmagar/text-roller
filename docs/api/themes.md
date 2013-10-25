@@ -26,13 +26,13 @@ At the moment, there are 6 themes:
 
 ### Multiple Themes on One Page
 
-If you need to use multipled Odometer themes on a single page, do the following.
+If you need to use multipled TextRoller themes on a single page, do the following.
 
 ```javascript
 odometerOptions = { auto: false }; // Disables auto-initialization
 
 // For each odometer, initialize with the theme passed in:
-var odometer = new Odometer({ el: $('.odometer')[0], value: 123, theme: 'car' });
+var odometer = new TextRoller({ el: $('.odometer')[0], value: 123, theme: 'car' });
 odometer.render();
 ```
 
@@ -59,7 +59,7 @@ odometer.render();
     (function(){
         $('[data-theme]').each(function(){
             var v = 123456;
-            var o = new Odometer({
+            var o = new TextRoller({
                 el: this,
                 value: 123456,
                 theme: $(this).data('theme')

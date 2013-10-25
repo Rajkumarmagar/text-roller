@@ -106,7 +106,7 @@ setupNumberSections = ->
             el: $odometerContainer[0]
         )
 
-        odometer = new Odometer odometerOptions
+        odometer = new TextRoller odometerOptions
 
         odometer.render()
 
