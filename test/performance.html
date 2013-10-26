@@ -25,7 +25,7 @@
     value: 4,
     max: 10,
     change: function(event, ui){
-      updateOdometerCount(Math.pow(2, ui.value));
+      updateTextRollerCount(Math.pow(2, ui.value));
     }
   });
 </script>
@@ -42,7 +42,7 @@
   }, 3000);
 
 
-  function createOdometer(){
+  function createTextRoller(){
     var el = document.createElement('div');
 
     var cont = document.createElement('div');
@@ -50,7 +50,7 @@
     cont.appendChild(el);
     container.appendChild(cont);
 
-    var od = new Odometer({
+    var od = new TextRoller({
       el: el,
       value: 0
     });
@@ -58,22 +58,22 @@
     return od;
   }
 
-  function destroyOdometer(od){
+  function destroyTextRoller(od){
     container.removeChild(od.el.parentNode);
   }
 
-  function updateOdometerCount(num){
+  function updateTextRollerCount(num){
     if (num > odometers.length){
       for(var i=odometers.length; i < num; i++){
-        odometers.push(createOdometer());
+        odometers.push(createTextRoller());
       }
     } else if (num < odometers.length){
       for(var i=num - 1; i < odometers.length; i++){
-        destroyOdometer(odometers[i]);
+        destroyTextRoller(odometers[i]);
       }
       odometers.splice(num - 1, (odometers.length - num));
     }
   }
 
-  updateOdometerCount(16);
+  updateTextRollerCount(16);
 </script>
