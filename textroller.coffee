@@ -1,7 +1,7 @@
-VALUE_HTML = '<span class="odometer-value"></span>'
-RIBBON_HTML = '<span class="odometer-ribbon"><span class="odometer-ribbon-inner">' + VALUE_HTML + '</span></span>'
-DIGIT_HTML = '<span class="odometer-digit"><span class="odometer-digit-spacer">8</span><span class="odometer-digit-inner">' + RIBBON_HTML + '</span></span>'
-FORMAT_MARK_HTML = '<span class="odometer-formatting-mark"></span>'
+VALUE_HTML = '<span class="textroller-value"></span>'
+RIBBON_HTML = '<span class="textroller-ribbon"><span class="textroller-ribbon-inner">' + VALUE_HTML + '</span></span>'
+DIGIT_HTML = '<span class="textroller-digit"><span class="textroller-digit-spacer">8</span><span class="textroller-digit-inner">' + RIBBON_HTML + '</span></span>'
+FORMAT_MARK_HTML = '<span class="textroller-formatting-mark"></span>'
 
 # Special values for alpha frames
 
@@ -88,10 +88,10 @@ do wrapJQuery = ->
       do (property) ->
         old = window.jQuery.fn[property]
         window.jQuery.fn[property] = (val) ->
-          if not val? or not this[0]?.odometer?
+          if not val? or not this[0]?.textroller?
             return old.apply this, arguments
 
-          this[0].odometer.update val
+          this[0].textroller.update val
 
 # In case jQuery is brought in after this file
 setTimeout wrapJQuery, 0
@@ -99,9 +99,9 @@ setTimeout wrapJQuery, 0
 class TextRoller
   constructor: (@options) ->
     @el = @options.el
-    return @el.odometer if @el.odometer?
+    return @el.textroller if @el.textroller?
 
-    @el.odometer = @
+    @el.textroller = @
 
     for k, v in TextRoller.options
       if not @options[k]?
@@ -134,7 +134,7 @@ class TextRoller
 
   renderInside: ->
     @inside = document.createElement 'div'
-    @inside.className = 'odometer-inside'
+    @inside.className = 'textroller-inside'
     @el.innerHTML = ''
     @el.appendChild @inside
 
@@ -232,26 +232,26 @@ class TextRoller
     classes = @el.className.split(' ')
     newClasses = []
     for cls in classes when cls.length
-      if match = /^odometer-theme-(.+)$/.exec(cls)
+      if match = /^textroller-theme-(.+)$/.exec(cls)
         theme = match[1]
         continue
 
-      if /^odometer(-|$)/.test(cls)
+      if /^textroller(-|$)/.test(cls)
         continue
         
       newClasses.push cls
 
-    newClasses.push 'odometer'
+    newClasses.push 'textroller'
 
     unless TRANSITION_SUPPORT
-      newClasses.push 'odometer-no-transitions'
+      newClasses.push 'textroller-no-transitions'
 
     if theme
-      newClasses.push "odometer-theme-#{ theme }"
+      newClasses.push "textroller-theme-#{ theme }"
     else
       # This class matches all themes, so it should do what you'd expect if only one
       # theme css file is brought into the page.
-      newClasses.push "odometer-auto-theme"
+      newClasses.push "textroller-auto-theme"
 
     @el.className = newClasses.join(' ')
 
@@ -276,9 +276,9 @@ class TextRoller
     console.log "[noreturn ! :D]"
 
     if newValue > @value
-      @el.className += ' odometer-animating-up'
+      @el.className += ' textroller-animating-up'
     else
-      @el.className += ' odometer-animating-down'
+      @el.className += ' textroller-animating-down'
 
     @stopWatchingMutations()
     @animate newValue
@@ -287,7 +287,7 @@ class TextRoller
     setTimeout =>
       @el.offsetHeight
 
-      @el.className += ' odometer-animating'
+      @el.className += ' textroller-animating'
     , 0
 
     @value = newValue
@@ -311,17 +311,17 @@ class TextRoller
 
   addDigit: (value, repeating=true) ->
     if value is '-'
-      return @addSpacer value, null, 'odometer-negation-mark'
+      return @addSpacer value, null, 'textroller-negation-mark'
 
     if value is @format.radix
-      return @addSpacer value, null, 'odometer-radix-mark'
+      return @addSpacer value, null, 'textroller-radix-mark'
 
     if repeating
       resetted = false
       while true
         if not @format.repeating.length
           if resetted
-            throw new Error "Bad odometer format without digits"
+            throw new Error "Bad textroller format without digits"
 
           @resetFormat()
           resetted = true
@@ -336,7 +336,7 @@ class TextRoller
     console.log "[after repeatin@addDigit] value = " + value
     digit = @renderDigit()
     console.log "[after renderDigit@addDigit] value = " + value
-    digit.querySelector('.odometer-value').innerHTML = @intToChar value
+    digit.querySelector('.textroller-value').innerHTML = @intToChar value
     @digits.push digit
 
     @insertDigit digit
@@ -510,7 +510,7 @@ class TextRoller
       console.log @digits
         #@addDigit ' ', (i >= fractionalCount)
 
-      @ribbons[i] ?= @digits[i].querySelector('.odometer-ribbon-inner')
+      @ribbons[i] ?= @digits[i].querySelector('.textroller-ribbon-inner')
       @ribbons[i].innerHTML = ''
       nullArray = []
       for tr in [0..digitCount-1]
@@ -522,30 +522,30 @@ class TextRoller
         console.log "   [#]["+i+"]["+j+"][frame:"+frame+"][frames ="
         console.log frames
         numEl = document.createElement('div')
-        numEl.className = 'odometer-value'
+        numEl.className = 'textroller-value'
         numEl.innerHTML = @intToChar frame
 
         @ribbons[i].appendChild numEl
 
         if j == frames.length - 1
-          numEl.className += ' odometer-last-value'
+          numEl.className += ' textroller-last-value'
         if j == 0
-          numEl.className += ' odometer-first-value'
+          numEl.className += ' textroller-first-value'
         console.log "   [#]"
 
-    mark = @inside.querySelector('.odometer-radix-mark')
+    mark = @inside.querySelector('.textroller-radix-mark')
     mark.parent.removeChild(mark) if mark?
 
     if fractionalCount
-      @addSpacer @format.radix, @digits[fractionalCount - 1], 'odometer-radix-mark'
+      @addSpacer @format.radix, @digits[fractionalCount - 1], 'textroller-radix-mark'
 
-TextRoller.options = window.odometerOptions ? {}
+TextRoller.options = window.textrollerOptions ? {}
 
 setTimeout ->
   # We do this in a seperate pass to allow people to set
-  # window.odometerOptions after bringing the file in.
-  if window.odometerOptions
-    for k, v of window.odometerOptions
+  # window.textrollerOptions after bringing the file in.
+  if window.textrollerOptions
+    for k, v of window.textrollerOptions
       TextRoller.options[k] ?= v
 , 0
 
@@ -554,10 +554,10 @@ TextRoller.init = ->
     # IE 7 or 8 in Quirksmode
     return
 
-  elements = document.querySelectorAll (TextRoller.options.selector or '.odometer')
+  elements = document.querySelectorAll (TextRoller.options.selector or '.textroller')
 
   for el in elements
-    el.odometer = new TextRoller {el, value: el.innerText}
+    el.textroller = new TextRoller {el, value: el.innerText}
 
 if document.documentElement?.doScroll? and document.createEventObject?
   # IE < 9
