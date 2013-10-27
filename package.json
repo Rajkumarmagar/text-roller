@@ -1,10 +1,9 @@
 {
-  "name": "odometer",
-  "version": "0.4.2",
-  "description": "Transition numbers with ease",
+  "name": "textroller",
+  "version": "0.0.1",
+  "description": "Transition words with ease",
   "authors": [
-    "Adam Schwartz <aschwartz@hubspot.com>",
-    "Zack Bloom <zbloom@hubspot.com>"
+    "Anré Aubin <andre.aubin@lambdaweb.fr>"
   ],
   "license": "MIT",
   "devDependencies": {
