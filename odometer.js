@@ -1,5 +1,5 @@
 (function() {
-  var ALPHA_COUNT, ALPHA_MAX, ALPHA_MIN, COUNT_FRAMERATE, COUNT_MS_PER_FRAME, DIGIT_FORMAT, DIGIT_HTML, DIGIT_SPEEDBOOST, DURATION, FORMAT_MARK_HTML, FORMAT_PARSER, FRAMERATE, FRAMES_PER_VALUE, MS_PER_FRAME, MutationObserver, Odometer, RIBBON_HTML, TRANSITION_END_EVENTS, TRANSITION_SUPPORT, VALUE_HTML, createFromHTML, fractionalPart, now, requestAnimationFrame, round, transitionCheckStyles, wrapJQuery, _jQueryWrapped, _old, _ref, _ref1,
+  var ALPHA_COUNT, ALPHA_MAX, ALPHA_MIN, COUNT_FRAMERATE, COUNT_MS_PER_FRAME, DIGIT_FORMAT, DIGIT_HTML, DIGIT_SPEEDBOOST, DURATION, FORMAT_MARK_HTML, FORMAT_PARSER, FRAMERATE, FRAMES_PER_VALUE, MS_PER_FRAME, MutationObserver, RIBBON_HTML, TRANSITION_END_EVENTS, TRANSITION_SUPPORT, TextRoller, VALUE_HTML, createFromHTML, fractionalPart, now, requestAnimationFrame, round, transitionCheckStyles, wrapJQuery, _jQueryWrapped, _old, _ref, _ref1,
     __slice = [].slice;
 
   VALUE_HTML = '<span class="odometer-value"></span>';
@@ -96,8 +96,8 @@
 
   setTimeout(wrapJQuery, 0);
 
-  Odometer = (function() {
-    function Odometer(options) {
+  TextRoller = (function() {
+    function TextRoller(options) {
       var e, k, property, v, _base, _fn, _i, _j, _len, _len1, _ref, _ref1, _ref2,
         _this = this;
       this.options = options;
@@ -106,7 +106,7 @@
         return this.el.odometer;
       }
       this.el.odometer = this;
-      _ref = Odometer.options;
+      _ref = TextRoller.options;
       for (v = _i = 0, _len = _ref.length; _i < _len; v = ++_i) {
         k = _ref[v];
         if (this.options[k] == null) {
@@ -144,14 +144,14 @@
       this;
     }
 
-    Odometer.prototype.renderInside = function() {
+    TextRoller.prototype.renderInside = function() {
       this.inside = document.createElement('div');
       this.inside.className = 'odometer-inside';
       this.el.innerHTML = '';
       return this.el.appendChild(this.inside);
     };
 
-    Odometer.prototype.watchForMutations = function() {
+    TextRoller.prototype.watchForMutations = function() {
       var e,
         _this = this;
       if (MutationObserver == null) {
@@ -174,7 +174,7 @@
       }
     };
 
-    Odometer.prototype.startWatchingMutations = function() {
+    TextRoller.prototype.startWatchingMutations = function() {
       if (this.watchMutations) {
         return this.observer.observe(this.el, {
           childList: true
@@ -182,17 +182,17 @@
       }
     };
 
-    Odometer.prototype.stopWatchingMutations = function() {
+    TextRoller.prototype.stopWatchingMutations = function() {
       var _ref;
       return (_ref = this.observer) != null ? _ref.disconnect() : void 0;
     };
 
-    Odometer.prototype.intToChar = function(val) {
+    TextRoller.prototype.intToChar = function(val) {
       val = String.fromCharCode(val + ALPHA_MIN);
       return val;
     };
 
-    Odometer.prototype.cleanValue = function(val) {
+    TextRoller.prototype.cleanValue = function(val) {
       var char;
       if (typeof val === 'string') {
         val = val.split('');
@@ -211,7 +211,7 @@
       }
     };
 
-    Odometer.prototype.bindTransitionEnd = function() {
+    TextRoller.prototype.bindTransitionEnd = function() {
       var event, renderEnqueued, _i, _len, _ref, _results,
         _this = this;
       if (this.transitionEndBound) {
@@ -238,13 +238,13 @@
       return _results;
     };
 
-    Odometer.prototype.resetFormat = function() {
+    TextRoller.prototype.resetFormat = function() {
       var format, fractional, parsed, precision, radix, repeating, _ref, _ref1;
       format = (_ref = this.options.format) != null ? _ref : DIGIT_FORMAT;
       format || (format = 'd');
       parsed = FORMAT_PARSER.exec(format);
       if (!parsed) {
-        throw new Error("Odometer: Unparsable digit format");
+        throw new Error("TextRoller: Unparsable digit format");
       }
       _ref1 = parsed.slice(1, 4), repeating = _ref1[0], radix = _ref1[1], fractional = _ref1[2];
       precision = (fractional != null ? fractional.length : void 0) || 0;
@@ -255,7 +255,7 @@
       };
     };
 
-    Odometer.prototype.render = function(value) {
+    TextRoller.prototype.render = function(value) {
       var classes, cls, digit, match, newClasses, theme, wholePart, _i, _j, _len, _len1, _ref;
       if (value == null) {
         value = this.value;
@@ -309,7 +309,7 @@
       return this.startWatchingMutations();
     };
 
-    Odometer.prototype.update = function(newValue) {
+    TextRoller.prototype.update = function(newValue) {
       var _this = this;
       newValue = this.cleanValue(newValue);
       console.log("New value : " + newValue);
@@ -332,11 +332,11 @@
       return this.value = newValue;
     };
 
-    Odometer.prototype.renderDigit = function() {
+    TextRoller.prototype.renderDigit = function() {
       return createFromHTML(DIGIT_HTML);
     };
 
-    Odometer.prototype.insertDigit = function(digit, before) {
+    TextRoller.prototype.insertDigit = function(digit, before) {
       if (before != null) {
         return this.inside.insertBefore(digit, before);
       } else if (!this.inside.children.length) {
@@ -346,7 +346,7 @@
       }
     };
 
-    Odometer.prototype.addSpacer = function(char, before, extraClasses) {
+    TextRoller.prototype.addSpacer = function(char, before, extraClasses) {
       var spacer;
       spacer = createFromHTML(FORMAT_MARK_HTML);
       spacer.innerHTML = char;
@@ -356,7 +356,7 @@
       return this.insertDigit(spacer, before);
     };
 
-    Odometer.prototype.addDigit = function(value, repeating) {
+    TextRoller.prototype.addDigit = function(value, repeating) {
       var char, digit, resetted;
       if (repeating == null) {
         repeating = true;
@@ -393,7 +393,7 @@
       return this.insertDigit(digit);
     };
 
-    Odometer.prototype.animate = function(newValue) {
+    TextRoller.prototype.animate = function(newValue) {
       console.log(">>> animate. val=" + newValue);
       if (!TRANSITION_SUPPORT || this.options.animation === 'count') {
         return this.animateCount(newValue);
@@ -402,7 +402,7 @@
       }
     };
 
-    Odometer.prototype.valDiff = function(newValue, oldValue) {
+    TextRoller.prototype.valDiff = function(newValue, oldValue) {
       var diffTab, finalSize, i, _i, _ref;
       diffTab = [];
       console.log("@valDiff");
@@ -414,7 +414,7 @@
       return diffTab;
     };
 
-    Odometer.prototype.noChanges = function(diff) {
+    TextRoller.prototype.noChanges = function(diff) {
       var i, _i, _len;
       for (_i = 0, _len = diff.length; _i < _len; _i++) {
         i = diff[_i];
@@ -425,7 +425,7 @@
       return false;
     };
 
-    Odometer.prototype.animateCount = function(newValue) {
+    TextRoller.prototype.animateCount = function(newValue) {
       var cur, diff, last, start, tick,
         _this = this;
       console.log(">>> animateCount. val=");
@@ -461,7 +461,7 @@
       })();
     };
 
-    Odometer.prototype.getDigitCount = function() {
+    TextRoller.prototype.getDigitCount = function() {
       var finalSize, i, max, value, values, _i, _len;
       values = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
       finalSize = 0;
@@ -479,7 +479,7 @@
       return finalSize;
     };
 
-    Odometer.prototype.getFractionalDigitCount = function() {
+    TextRoller.prototype.getFractionalDigitCount = function() {
       var i, parser, parts, value, values, _i, _len;
       values = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
       parser = /^\d*\.(\d*?)0*$/;
@@ -496,14 +496,14 @@
       return Math.max.apply(Math, values);
     };
 
-    Odometer.prototype.resetDigits = function() {
+    TextRoller.prototype.resetDigits = function() {
       this.digits = [];
       this.ribbons = [];
       this.inside.innerHTML = '';
       return this.resetFormat();
     };
 
-    Odometer.prototype.animateSlide = function(newValue) {
+    TextRoller.prototype.animateSlide = function(newValue) {
       var boosted, cur, diff, digitCount, digits, dist, end, fractionalCount, frame, frames, i, incr, j, mark, nullArray, numEl, oldValue, start, tr, _base, _i, _j, _k, _l, _len, _len1, _len2, _m, _n, _ref, _ref1, _ref2, _results;
       oldValue = this.value;
       console.log(">>> animateSlide. val=");
@@ -612,11 +612,11 @@
       }
     };
 
-    return Odometer;
+    return TextRoller;
 
   })();
 
-  Odometer.options = (_ref = window.odometerOptions) != null ? _ref : {};
+  TextRoller.options = (_ref = window.odometerOptions) != null ? _ref : {};
 
   setTimeout(function() {
     var k, v, _base, _ref1, _results;
@@ -625,22 +625,22 @@
       _results = [];
       for (k in _ref1) {
         v = _ref1[k];
-        _results.push((_base = Odometer.options)[k] != null ? (_base = Odometer.options)[k] : _base[k] = v);
+        _results.push((_base = TextRoller.options)[k] != null ? (_base = TextRoller.options)[k] : _base[k] = v);
       }
       return _results;
     }
   }, 0);
 
-  Odometer.init = function() {
+  TextRoller.init = function() {
     var el, elements, _i, _len, _results;
     if (document.querySelectorAll == null) {
       return;
     }
-    elements = document.querySelectorAll(Odometer.options.selector || '.odometer');
+    elements = document.querySelectorAll(TextRoller.options.selector || '.odometer');
     _results = [];
     for (_i = 0, _len = elements.length; _i < _len; _i++) {
       el = elements[_i];
-      _results.push(el.odometer = new Odometer({
+      _results.push(el.odometer = new TextRoller({
         el: el,
         value: el.innerText
       }));
@@ -651,19 +651,19 @@
   if ((((_ref1 = document.documentElement) != null ? _ref1.doScroll : void 0) != null) && (document.createEventObject != null)) {
     _old = document.onreadystatechange;
     document.onreadystatechange = function() {
-      if (document.readyState === 'complete' && Odometer.options.auto !== false) {
-        Odometer.init();
+      if (document.readyState === 'complete' && TextRoller.options.auto !== false) {
+        TextRoller.init();
       }
       return _old != null ? _old.apply(this, arguments) : void 0;
     };
   } else {
     document.addEventListener('DOMContentLoaded', function() {
-      if (Odometer.options.auto !== false) {
-        return Odometer.init();
+      if (TextRoller.options.auto !== false) {
+        return TextRoller.init();
       }
     }, false);
   }
 
-  window.Odometer = Odometer;
+  window.TextRoller = TextRoller;
 
 }).call(this);
