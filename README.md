@@ -21,7 +21,7 @@ In your web page:
 <link rel="stylesheet" href="../themes/odometer-theme-minimal.css" />
 
 <script src="../textroller.js"></script>
-<div id="roller" class="textroller">bag</div>
+<div id="roller" class="textroller"></div>
 
 <script>
   var elt         = document.getElementById("roller");
