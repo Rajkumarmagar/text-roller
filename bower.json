@@ -1,10 +1,10 @@
 {
-  "name": "odometer",
-  "version": "0.4.2",
-  "main": "odometer.js",
+  "name": "textroller",
+  "version": "0.0.1",
+  "main": "textroller.js",
   "ignore": [
     "*",
     "!themes/*",
-    "!odometer.js"
+    "!textroller.js"
   ]
 }
