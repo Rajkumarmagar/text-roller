@@ -1,16 +1,20 @@
-<link rel="stylesheet" href="../themes/odometer-theme-default.css" />
 <style>
-.odometer {
+.textroller {
   font-size: 40px;
 }
 </style>
+<link rel="stylesheet" href="../themes/odometer-theme-minimal.css" />
 
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 <script src="../textroller.js"></script>
-<div class="odometer">bag</div>
+<div id="roller" class="textroller">bag</div>
 
 <script>
-  setTimeout(function(){
-    //$('.odometer').html("and");
-  }, 1000);
+  var elt = document.getElementById("roller");
+  elt.textroller = new TextRoller({
+      el: elt,
+      values: ["one", "two", "three"],
+      align: "left",
+      delay: 3000,
+      loop: true
+  });
 </script>

@@ -150,7 +150,7 @@ class TextRoller
               $(@el).html(newVal)
         catch e
           e
-      ,@options.delay ? 3000
+      ,@options.delay ? 5000
       
     @
   
@@ -556,6 +556,7 @@ setTimeout ->
       TextRoller.options[k] ?= v
 , 0
 
+# Don't need anymore
 TextRoller.init = ->
   if not document.querySelectorAll?
     # IE 7 or 8 in Quirksmode
@@ -564,20 +565,6 @@ TextRoller.init = ->
   elements = document.querySelectorAll (TextRoller.options.selector or '.odometer')
 
   for el in elements
-    el.odometer = new TextRoller {el, values: [el.innerText, "coucou", "bonjour", "salut"]}
-
-if document.documentElement?.doScroll? and document.createEventObject?
-  # IE < 9
-  _old = document.onreadystatechange
-  document.onreadystatechange = ->
-    if document.readyState is 'complete' and TextRoller.options.auto isnt false
-      TextRoller.init()
-
-    _old?.apply this, arguments
-else
-  document.addEventListener 'DOMContentLoaded', ->
-    if TextRoller.options.auto isnt false
-      TextRoller.init()
-  , false
+    el.odometer = new TextRoller {el, values: [el.innerText]}
 
 window.TextRoller = TextRoller
