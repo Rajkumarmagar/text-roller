@@ -74,6 +74,7 @@ Download the <a href="https://raw.github.com/lambda2/text-roller/master/textroll
 <div id="roller" class="textroller"></div>
 
 <script>
+    window.onload = function(){
   var elt         = document.getElementById("roller");
   var texts       = ["pancake", "muffin", "cookie"]
   elt.textroller  = new TextRoller({
@@ -83,6 +84,7 @@ Download the <a href="https://raw.github.com/lambda2/text-roller/master/textroll
       delay: 3000,      // in milliseconds,       default : 5000
       loop: false       // at the end, restart.   default : true
   });
+    };
 </script>
         </section>
 
