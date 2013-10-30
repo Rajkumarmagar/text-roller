@@ -8,12 +8,12 @@ module.exports = (grunt) ->
     coffee:
       compile:
         files:
-          'odometer.js': 'odometer.coffee'
+          'textroller.js': 'textroller.coffee'
           'docs/welcome/landing-page.js': 'docs/welcome/landing-page.coffee'
 
     watch:
       coffee:
-        files: ['odometer.coffee', 'docs/welcome/landing-page.coffee', 'sass/*']
+        files: ['textroller.coffee', 'docs/welcome/landing-page.coffee', 'sass/*']
         tasks: ["coffee", "uglify", "compass"]
 
     uglify:
@@ -21,8 +21,8 @@ module.exports = (grunt) ->
         banner: "/*! <%= pkg.name %> <%= pkg.version %> */\n"
 
       dist:
-        src: 'odometer.js'
-        dest: 'odometer.min.js'
+        src: 'textroller.js'
+        dest: 'textroller.min.js'
 
     compass:
       dist:

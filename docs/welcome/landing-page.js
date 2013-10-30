@@ -129,7 +129,7 @@
         value: theme.numbers[1].number,
         el: $odometerContainer[0]
       });
-      odometer = new Odometer(odometerOptions);
+      odometer = new TextRoller(odometerOptions);
       odometer.render();
       next = function() {
         var number;

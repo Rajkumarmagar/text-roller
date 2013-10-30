@@ -1,2 +1,4 @@
 node_modules
 .sass-cache/
+/nbproject/private/nbproject
+nbproject/
