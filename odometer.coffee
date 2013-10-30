@@ -96,41 +96,84 @@ do wrapJQuery = ->
 # In case jQuery is brought in after this file
 setTimeout wrapJQuery, 0
 
-class Odometer
+class TextRoller
   constructor: (@options) ->
-    @el = @options.el
-    return @el.odometer if @el.odometer?
-
-    @el.odometer = @
-
-    for k, v in Odometer.options
-      if not @options[k]?
-        @options[k] = v
-
-    @options.duration ?= DURATION
-    @MAX_VALUES = ((@options.duration / MS_PER_FRAME) / FRAMES_PER_VALUE) | 0
-
-    @resetFormat()
-
-    @value = @cleanValue(@options.value ? '')
-
-    @renderInside()
-    @render()
-
+    
     try
-      for property in ['HTML', 'Text']
-        do (property) =>
-          Object.defineProperty @el, "inner#{ property }",
-            get: =>
-              @inside["outer#{ property }"]
+      @el = @options.el
+      return @el.odometer if @el.odometer?
 
-            set: (val) =>
-              @update val
-    catch e
-      # Safari
-      @watchForMutations()
+      @el.odometer = @
 
+      for k, v in TextRoller.options
+        if not @options[k]?
+          @options[k] = v
+
+      @options.duration ?= DURATION
+      @options.valuesIndex = 0
+      @options.values = @cleanArray()
+      @MAX_VALUES = ((@options.duration / MS_PER_FRAME) / FRAMES_PER_VALUE) | 0
+
+      @resetFormat()
+
+      @value = @cleanValue(@options.values[0] ? '')
+
+      @renderInside()
+      @render()
+
+      try
+        for property in ['HTML', 'Text']
+          do (property) =>
+            Object.defineProperty @el, "inner#{ property }",
+              get: =>
+                @inside["outer#{ property }"]
+
+              set: (val) =>
+                @update val
+      catch e
+        # Safari
+        @watchForMutations()
+
+      setInterval =>
+        elt = @
+        try
+          if @options.valuesIndex >= @options.values.length-1
+            @options.valuesIndex = 0
+          else
+            @options.valuesIndex++
+          newVal = @options.values[@options.valuesIndex]
+
+          $(@el).html(newVal)
+        catch e
+          e
+      ,@options.delay ? 10000
+      
     @
+  
+  cleanArray: ->
+    maxLength = @maxLength @options.values
+    for elt, h in @options.values
+      str = elt.split("")
+      diff = ((maxLength - elt.length) / 2) ? 0
+      if diff > 0
+        for u in [1..diff]
+          if @options.align == "left"
+            str.push "  "
+          else if @options.align == "right"
+            str.unshift "  "
+          else
+            str.push " "
+            str.unshift " "
+      @options.values[h] = str.join ''
+    @options.values
+        
+    
+  maxLength: (arr) ->
+    max = 0
+    for elt in arr
+      if elt.length > max
+        max = elt.length
+    max
 
   renderInside: ->
     @inside = document.createElement 'div'
@@ -171,9 +214,10 @@ class Odometer
       val = val.split ''
       val = for char in val
         char.charCodeAt(0) - ALPHA_MIN
-      console.log "[afterCharcode] Val = "
-      console.log val
-      val
+    else if typeof val is 'object'
+      val = for char in val
+        char.charCodeAt(0) - ALPHA_MIN
+    val
       #badChars = '.,'
       #if @format.radix
       #  badChars = badChars.replace @format.radix, ''
@@ -210,7 +254,7 @@ class Odometer
 
     parsed = FORMAT_PARSER.exec format
     if not parsed
-      throw new Error "Odometer: Unparsable digit format"
+      throw new Error "TextRoller: Unparsable digit format"
 
     [repeating, radix, fractional] = parsed[1..3]
 
@@ -219,9 +263,6 @@ class Odometer
     @format = {repeating, radix, precision}
 
   render: (value=@value) ->
-    console.log "[@render] value = "
-    console.log value
-    console.log @value
     @stopWatchingMutations()
     @resetFormat()
 
@@ -260,8 +301,6 @@ class Odometer
     @digits = []
     wholePart = not @format.precision or not fractionalPart(value) or false
     for digit in value.reverse()
-      console.log "[@for digit in value.rev()] digit = " + digit
-      console.log "[String.fromCharCode(digit)] digit = " + String.fromCharCode(digit)
       if @intToChar digit is @format.radix
         wholePart = true
 
@@ -271,9 +310,7 @@ class Odometer
 
   update: (newValue) ->
     newValue = @cleanValue newValue
-    console.log "New value : "+newValue
     return unless newValue != @value
-    console.log "[noreturn ! :D]"
 
     if newValue > @value
       @el.className += ' odometer-animating-up'
@@ -333,16 +370,13 @@ class Odometer
 
         @addSpacer char
     
-    console.log "[after repeatin@addDigit] value = " + value
     digit = @renderDigit()
-    console.log "[after renderDigit@addDigit] value = " + value
     digit.querySelector('.odometer-value').innerHTML = @intToChar value
     @digits.push digit
 
     @insertDigit digit
 
   animate: (newValue) ->
-    console.log ">>> animate. val=" + newValue
     if not TRANSITION_SUPPORT or @options.animation is 'count'
       @animateCount newValue
     else
@@ -350,11 +384,9 @@ class Odometer
 
   valDiff: (newValue, oldValue) ->
     diffTab = []
-    console.log "@valDiff"
     finalSize = Math.max(oldValue.length, newValue.length)
     for i in [0..finalSize-1]
       diffTab[i] = (oldValue[i] or 0) - (newValue[i] or 0)
-      console.log "[" + (oldValue[i] or 0) + " - " +  (newValue[i] or 0) + " = " + diffTab[i]
     diffTab
 
   noChanges: (diff) ->
@@ -365,12 +397,7 @@ class Odometer
       
 
   animateCount: (newValue) ->
-    console.log ">>> animateCount. val="
-    console.log newValue
-    console.log ">>> valDiff. val="
-    console.log @valDiff(newValue, @value)
     return unless diff = +newValue - @value
-    console.log ">>> animateCount.noretrun"
 
     start = last = now()
 
@@ -402,9 +429,7 @@ class Odometer
     for value, i in values
       if value.length > finalSize then finalSize = value.length
       values[i] = Math.abs(value)
-    console.log "finalSize = " + finalSize
     max = Math.max values...
-    console.log "max = " + max
 
     Math.ceil(Math.log(max + 1) / Math.log(10))
     finalSize
@@ -435,10 +460,6 @@ class Odometer
   animateSlide: (newValue) ->
     oldValue = @value
 
-    console.log ">>> animateSlide. val="
-    console.log newValue
-    console.log ">>> valDiff. val="
-    console.log @valDiff(newValue, @value)
     fractionalCount = 0 #@getFractionalDigitCount oldValue, newValue
 
     if fractionalCount
@@ -447,7 +468,6 @@ class Odometer
 
     diff = @valDiff(newValue, @value)
     return unless @noChanges diff
-    console.log ">>> PASSED SLIDE"
 
     @bindTransitionEnd()
 
@@ -459,16 +479,12 @@ class Odometer
     # animated in each column
     for i in [(digitCount-1)..0]#[0...digitCount]
       start = Math.floor(oldValue[i])# / Math.pow(10, (digitCount - i - 1)))
-      console.log "["+i+"]>>> start = " + start
       end = Math.floor(newValue[(digitCount-1) - i])# / Math.pow(10, (digitCount - i - 1)))
-      console.log "["+i+"]>>> end = " + end
 
       dist = end - start
-      console.log "["+i+"]>>> dist = " + dist
 
       if Math.abs(dist) > @MAX_VALUES
         # We need to subsample
-        console.log "["+i+"]>>> SUBSAMPLE REQUIRED"
         frames = []
 
         # Subsequent digits need to be faster than previous ones
@@ -488,26 +504,16 @@ class Odometer
 
       # We only care about the last digit
       for frame, i in frames
-        console.log "[frames][i:"+i+"][fame:"+frame+"] Math.abs(frame % 10) = " +  Math.abs(frame % 10)
         frames[i] = Math.abs(frame % ALPHA_COUNT)
 
-      console.log "["+i+"]>>>frames : " + frames
       digits.push frames
-      console.log "["+i+"]>>>digits : " + digits
 
-    console.log "before @resetDigits : " + digits
-    console.log digits
     @resetDigits()
-    console.log "after @resetDigits : " + digits
-    console.log digits
 
     for frames, i in digits.reverse()
-      console.log "[Bdigits.rev()][i:"+i+"][fame:"+frame+"] @digits[i] = "
-      console.log @digits
       if not @digits[i]
         @addDigit ' ', false
-      console.log "[Adigits.rev()][i:"+i+"][fame:"+frame+"] @digits[i] = "
-      console.log @digits
+      
         #@addDigit ' ', (i >= fractionalCount)
 
       @ribbons[i] ?= @digits[i].querySelector('.odometer-ribbon-inner')
@@ -519,8 +525,6 @@ class Odometer
         frames = frames.reverse()
 
       for frame, j in frames
-        console.log "   [#]["+i+"]["+j+"][frame:"+frame+"][frames ="
-        console.log frames
         numEl = document.createElement('div')
         numEl.className = 'odometer-value'
         numEl.innerHTML = @intToChar frame
@@ -531,7 +535,6 @@ class Odometer
           numEl.className += ' odometer-last-value'
         if j == 0
           numEl.className += ' odometer-first-value'
-        console.log "   [#]"
 
     mark = @inside.querySelector('.odometer-radix-mark')
     mark.parent.removeChild(mark) if mark?
@@ -539,38 +542,38 @@ class Odometer
     if fractionalCount
       @addSpacer @format.radix, @digits[fractionalCount - 1], 'odometer-radix-mark'
 
-Odometer.options = window.odometerOptions ? {}
+TextRoller.options = window.odometerOptions ? {}
 
 setTimeout ->
   # We do this in a seperate pass to allow people to set
   # window.odometerOptions after bringing the file in.
   if window.odometerOptions
     for k, v of window.odometerOptions
-      Odometer.options[k] ?= v
+      TextRoller.options[k] ?= v
 , 0
 
-Odometer.init = ->
+TextRoller.init = ->
   if not document.querySelectorAll?
     # IE 7 or 8 in Quirksmode
     return
 
-  elements = document.querySelectorAll (Odometer.options.selector or '.odometer')
+  elements = document.querySelectorAll (TextRoller.options.selector or '.odometer')
 
   for el in elements
-    el.odometer = new Odometer {el, value: el.innerText}
+    el.odometer = new TextRoller {el, values: [el.innerText, "coucou", "bonjour", "salut"], valuesIndex: 0}
 
 if document.documentElement?.doScroll? and document.createEventObject?
   # IE < 9
   _old = document.onreadystatechange
   document.onreadystatechange = ->
-    if document.readyState is 'complete' and Odometer.options.auto isnt false
-      Odometer.init()
+    if document.readyState is 'complete' and TextRoller.options.auto isnt false
+      TextRoller.init()
 
     _old?.apply this, arguments
 else
   document.addEventListener 'DOMContentLoaded', ->
-    if Odometer.options.auto isnt false
-      Odometer.init()
+    if TextRoller.options.auto isnt false
+      TextRoller.init()
   , false
 
-window.Odometer = Odometer
+window.TextRoller = TextRoller
